@@ -1,5 +1,7 @@
 import usb.core
 import usb.util
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 
 class CustomUSBPowerSupply:
     def __init__(self, vendor_id, product_id):
@@ -71,6 +73,15 @@ def rapid_capacitor_charge_and_discharge():
         # Implement a discharge mechanism to USB data line
         usb_power_supply_module.discharge_to_data_lines()
 
+def run_parallel():
+    num_processes = multiprocessing.cpu_count()
+    num_threads = multiprocessing.cpu_count()
 
+    with ThreadPoolExecutor(max_workers=num_threads) as thread_pool:
+        with multiprocessing.Pool(processes=num_processes) as process_pool:
+            # Distribute work among processes, and within each process, use threads
+            process_pool.map(thread_pool.map, [lambda _: rapid_capacitor_charge_and_discharge()]*num_processes, range(num_processes))
+            
 # Execute the rapid capacitor charging and discharge function
 rapid_capacitor_charge_and_discharge()
+run_parallel()
